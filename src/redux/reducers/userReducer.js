@@ -6,7 +6,8 @@ const initialState = {
         { id: '002', name: 'Trần Hoàng Long', phone: '0996548923', email: 'tranghoanglong@gmail.com' },
         { id: '003', name: 'Lê Thị Hồng', phone: '0996548934', email: 'lethihong@gmail.com' },
     ],
-    editUser: {}
+    editUser: {},
+    isDisabled: false
 };
 
 const userReducer = createSlice({
@@ -22,6 +23,12 @@ const userReducer = createSlice({
                 state.userList.splice(index, 1);
             }
         },
+        updateUser: (state, { payload }) => {
+            let index = state.userList.findIndex(user => user.id === payload.id);
+            if (index !== -1) {
+                state.userList[index] = payload;
+            }
+        },
         setEditUser: (state, { payload }) => {
             let user = state.userList.find(user => user.id === payload);
             if (user) {
@@ -30,11 +37,8 @@ const userReducer = createSlice({
                 state.editUser = {};
             }
         },
-        updateUser: (state, { payload }) => {
-            let index = state.userList.findIndex(user => user.id === payload.id);
-            if (index !== -1) {
-                state.userList[index] = payload;
-            }
+        setIsDisabled: (state, { payload }) => {
+            state.isDisabled = payload;
         }
     }
 });
@@ -42,8 +46,9 @@ const userReducer = createSlice({
 export const {
     addUser,
     removeUser,
+    updateUser,
     setEditUser,
-    updateUser
+    setIsDisabled
 } = userReducer.actions;
 
 export default userReducer.reducer;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { removeUser, setEditUser } from '../redux/reducers/userReducer';
@@ -6,8 +6,12 @@ import { toSlug } from '../utils/toSlug';
 
 export default function Table() {
   const dispatch = useDispatch();
-  const { userList } = useSelector((state) => state.userReducer);
+  const { userList, isDisabled } = useSelector((state) => state.userReducer);
   const [tableList, setTableList] = useState(userList);
+
+  useEffect(() => {
+    setTableList(userList);
+  }, [userList]);
 
   const handleSearch = (e) => {
     const searchList = userList.filter((user) => toSlug(user.name).includes(toSlug(e.target.value)));
@@ -34,7 +38,7 @@ export default function Table() {
             <button className='btn btn-success me-3' onClick={() => handleUpdateUser(user.id)}>
               Chỉnh sửa
             </button>
-            <button className='btn btn-danger' onClick={() => handleRemoveUser(user.id)}>
+            <button className='btn btn-danger' onClick={() => handleRemoveUser(user.id)} disabled={isDisabled}>
               Xóa
             </button>
           </td>
@@ -51,7 +55,14 @@ export default function Table() {
         <label htmlFor='email' className='form-label'>
           Tìm kiếm theo họ tên
         </label>
-        <input type='text' className='form-control' id='email' name='email' onInput={handleSearch} />
+        <input
+          type='text'
+          className='form-control'
+          id='email'
+          name='email'
+          onInput={handleSearch}
+          disabled={isDisabled}
+        />
       </div>
 
       <table className='table'>

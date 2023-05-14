@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { addUser, setEditUser, updateUser } from '../redux/reducers/userReducer';
+import { addUser, setEditUser, setIsDisabled, updateUser } from '../redux/reducers/userReducer';
 import { toSlug } from '../utils/toSlug';
 
 export default function Form() {
   const dispatch = useDispatch();
-  const { editUser } = useSelector((state) => state.userReducer);
-  const { userList } = useSelector((state) => state.userReducer);
+  const { editUser, userList, isDisabled } = useSelector((state) => state.userReducer);
 
   const [user, setUser] = useState({
     id: '',
@@ -22,17 +21,57 @@ export default function Form() {
     name: '',
     email: '',
   });
-  const [isDisabled, setIsDisabled] = useState(false);
 
   useEffect(() => {
     if (editUser.id) {
-      setIsDisabled(true);
+      resetForm();
+      dispatch(setIsDisabled(true));
       setUser(editUser);
     } else {
-      setIsDisabled(false);
+      dispatch(setIsDisabled(false));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editUser.id]);
+
+  const resetForm = () => {
+    setUser({
+      id: '',
+      phone: '',
+      name: '',
+      email: '',
+    });
+    setErrors({
+      id: '',
+      phone: '',
+      name: '',
+      email: '',
+    });
+  };
+
+  const checkValidForm = () => {
+    let isValid = true;
+
+    // check init values of inputs
+    for (let key in user) {
+      if (user[key] === '') {
+        isValid = false;
+        setErrors((preErrors) => ({
+          ...preErrors,
+          [key]: 'Vui lòng không bỏ trống !',
+        }));
+      }
+    }
+
+    // check all errors
+    for (let key in errors) {
+      if (errors[key] !== '') {
+        isValid = false;
+        break;
+      }
+    }
+
+    return isValid;
+  };
 
   const handleChangeInput = (e) => {
     const { name, value } = e.target;
@@ -70,52 +109,25 @@ export default function Form() {
 
   const handleAddUser = (e) => {
     e.preventDefault();
-    let isValid = true;
-
-    // check init values of inputs
-    for (let key in user) {
-      if (user[key] === '') {
-        isValid = false;
-        setErrors((preErrors) => ({
-          ...preErrors,
-          [key]: 'Vui lòng không bỏ trống !',
-        }));
-      }
-    }
-
-    // check all errors
-    for (let key in errors) {
-      if (errors[key] !== '') {
-        isValid = false;
-        break;
-      }
-    }
+    const isValid = checkValidForm();
 
     // dispatch add user to list
     if (isValid) {
       dispatch(addUser(user));
-      // reset form
-      setUser({
-        id: '',
-        phone: '',
-        name: '',
-        email: '',
-      });
+      resetForm();
     }
   };
 
   const handleUpdateUser = () => {
-    dispatch(updateUser(user));
-    setIsDisabled(false);
-    // reset form
-    setUser({
-      id: '',
-      phone: '',
-      name: '',
-      email: '',
-    });
-    // reset edit user
-    dispatch(setEditUser());
+    const isValid = checkValidForm();
+
+    if (isValid) {
+      dispatch(updateUser(user));
+      dispatch(setIsDisabled(false));
+      resetForm();
+      // reset edit user
+      dispatch(setEditUser());
+    }
   };
 
   return (
